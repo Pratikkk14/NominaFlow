@@ -1,0 +1,22 @@
+# Web Framework & API Server
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.28.0,<1.0.0
+pydantic>=2.6.0,<3.0.0
+python-multipart>=0.0.9
+
+# Database & Migrations
+sqlalchemy>=2.0.28,<3.0.0
+alembic>=1.13.1,<2.0.0
+psycopg[binary]>=3.1.18
+
+# Security & Authentication
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+
+# Settings & Utilities
+python-dotenv>=1.0.1
+
+# Testing & Quality
+pytest>=8.1.0
+pytest-cov>=4.1.0
+httpx>=0.27.0
