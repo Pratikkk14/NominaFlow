@@ -3,7 +3,6 @@
 > **Course**: DevOps Lab Mini Project  
 > **Project**: NominaFlow — Training Nomination Workflow System  
 > **Milestone**: Week 4 — Git & GitHub Repository Initialization, Architecture Documentation Organization, and Python Skeleton  
-> **Date**: September 1, 2026  
 > **Repository**: [https://github.com/Pratikkk14/NominaFlow](https://github.com/Pratikkk14/NominaFlow)  
 
 ---
