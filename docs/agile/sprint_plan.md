@@ -5,17 +5,23 @@
 The project is structured into iterative weekly milestones combining Agile delivery and DevOps maturity.
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            15-WEEK PROJECT TIMELINE                         │
-├───────────────┬─────────────────────────────────────────────────────────────┤
-│ Phase 1       │ Weeks 1–3: Ideation, Problem Scope, Agile & SRS Architecture │
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                            15-WEEK PROJECT TIMELINE                           │
+├───────────────┬───────────────────────────────────────────────────────────────┤
+│ Phase 1       │ Weeks 1–3: Ideation, Problem Scope, Agile & SRS Architecture  │
+├───────────────┤───────────────────────────────────────────────────────────────┤
 │ Setup         │ Week 4: Git/GitHub Repo Initialization & Conventions (Current)│
-│ Development   │ Weeks 5–7: Data Models, Auth & Core Nomination API (FastAPI)│
-│ Review/Docs   │ Weeks 8–9: Reviewer Workflow, File Storage & Audit Trail    │
-│ Quality & CI  │ Weeks 10–11: Pytest Test Suite & Jenkins CI Pipeline Setup  │
-│ Deploy & CD   │ Weeks 12–13: Docker Containerization & Deployment Pipeline  │
-│ Monitoring    │ Weeks 14–15: Observability, Metrics & Final Review          │
-└───────────────┴─────────────────────────────────────────────────────────────┘
+├───────────────┤───────────────────────────────────────────────────────────────┤
+│ Development   │ Weeks 5–7: Data Models, Auth & Core Nomination API (FastAPI)  │
+├───────────────┤───────────────────────────────────────────────────────────────┤
+│ Review/Docs   │ Weeks 8–9: Reviewer Workflow, File Storage & Audit Trail      │
+├───────────────┤───────────────────────────────────────────────────────────────┤
+│ Quality & CI  │ Weeks 10–11: Pytest Test Suite & Jenkins CI Pipeline Setup    │
+├───────────────┤───────────────────────────────────────────────────────────────┤
+│ Deploy & CD   │ Weeks 12–13: Docker Containerization & Deployment Pipeline    │
+├───────────────┤───────────────────────────────────────────────────────────────┤
+│ Monitoring    │ Weeks 14–15: Observability, Metrics & Final Review            │
+└───────────────┴───────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -27,8 +33,8 @@ The project is structured into iterative weekly milestones combining Agile deliv
 | **Week 1** | Problem Definition & Scope | Problem statement, stakeholders, pain points, MVP boundaries | Completed |
 | **Week 2** | Agile & DevOps Planning | Epics, user stories, acceptance criteria, DevOps workflow | Completed |
 | **Week 3** | SRS & Technical Architecture | Requirements spec, system architecture, database & API models | Completed |
-| **Week 4** | Git & Repository Initialization | Repo layout, .gitignore, issue/PR templates, Python skeleton | **Current** |
-| **Week 5** | Data Modeling & Database Setup | PostgreSQL schemas, SQLAlchemy ORM models, Alembic migrations | Planned |
+| **Week 4** | Git & Repository Initialization | Repo layout, .gitignore, issue/PR templates, Python skeleton | Completed |
+| **Week 5** | Data Modeling & Database Setup | PostgreSQL schemas, SQLAlchemy ORM models, Alembic migrations | **Current** |
 | **Week 6** | Auth & User Management | Password hashing, JWT token authentication, RBAC middleware | Planned |
 | **Week 7** | Nomination Intake Service | Draft creation, validation engine, submission endpoints | Planned |
 | **Week 8** | Document Management Service | File upload, MIME validation, local disk/S3 storage driver | Planned |
