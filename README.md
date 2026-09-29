@@ -14,7 +14,9 @@ Organizations often manage employee training nominations through emails, spreads
 
 **NominaFlow** provides a centralized, automated web workflow for managing the complete lifecycle of training nominations.
 
-> 📖 **Complete Application & Architecture Guide**: See [**`docs/PROJECT_GUIDE.md`**](docs/PROJECT_GUIDE.md) for detailed portal walkthroughs, pre-seeded demo accounts, REST API contracts, and state machine transitions.
+> 📖 **Comprehensive Project Guides**:
+> * 📘 [**`docs/README.md` — Technical Architecture & Operational Guide**](docs/README.md): In-depth system design, FSM transitions, database models, RBAC, REST API reference, and quickstart manual.
+> * 📙 [**`docs/PROJECT_GUIDE.md` — User Workflow & Feature Manual**](docs/PROJECT_GUIDE.md): Interactive portal walkthroughs, pre-seeded personas, 1-click logins, and state machine transitions.
 
 The system supports the following core workflow:
 
@@ -94,6 +96,7 @@ NominaFlow/
 │   └── pull_request_template.md
 │
 ├── docs/
+│   ├── README.md               # Comprehensive Technical Architecture & Operational Guide
 │   ├── PROJECT_GUIDE.md        # Complete Application & Architecture User Guide
 │   ├── agile/                  # Epics, User Stories, Sprint Plan, DoD, DevOps Lifecycle
 │   ├── architecture/           # System Topology, Database Schema, REST API, State Machine
@@ -393,14 +396,16 @@ pytest -v --cov=src --cov-report=term-missing
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation & Deliverables
 
-Project documentation is maintained under [`docs/`](docs/):
+Project documentation and engineering specifications are maintained under [`docs/`](docs/) and [`Deliverables/`](Deliverables/):
 
-* **[Application & Architecture Guide](docs/PROJECT_GUIDE.md)**: Detailed feature walkthrough, API contracts, and user manual.
-* **[Requirements & SRS](docs/requirements/)**: Problem scope and formal Functional/Non-Functional requirements.
-* **[Architecture & Database](docs/architecture/)**: System architecture, PostgreSQL schema, REST API specs, and state machine transitions.
-* **[Agile & DevOps Workflow](docs/agile/)**: User stories, sprint roadmap, and branching conventions.
+* **[Technical Architecture & Operational Guide](docs/README.md)**: Full system architecture, database ER model, FSM transitions, and REST API contracts.
+* **[Application & User Guide](docs/PROJECT_GUIDE.md)**: Detailed feature walkthrough, UI portals, 1-click demo logins, and user manual.
+* **[Requirements & SRS](docs/requirements/)**: Problem scope and formal Functional/Non-Functional requirements (FR-01 to FR-14, NFR-01 to NFR-07).
+* **[Architecture & Database](docs/architecture/)**: System topology, PostgreSQL schema, REST API specs, and state machine transitions.
+* **[Agile & DevOps Workflow](docs/agile/)**: User stories, sprint roadmap, definition of done, and branching conventions.
+* **[Weekly Deliverable Reports](Deliverables/)**: Milestone submission reports (`week1.md` through `week4.md`).
 
 ---
 
