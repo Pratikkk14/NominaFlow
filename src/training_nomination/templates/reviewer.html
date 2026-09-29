@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Reviewer Dashboard — NominaFlow{% endblock %}
+
+{% block content %}
+<div>
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700;">Reviewer Evaluation Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Review pending training nominations, inspect course outlines & attachments, and record approve/reject decisions.</p>
+    </div>
+    <button onclick="loadReviewQueue()" class="btn btn-secondary btn-sm">🔄 Refresh Queue</button>
+  </div>
+
+  <!-- Review Queue Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">⏳ Nominations Awaiting Evaluation</h2>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Training Program</th>
+            <th>Provider</th>
+            <th>Type</th>
+            <th>Cost</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="reviewerTableBody">
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading pending review queue...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Review Action & Details Modal -->
+<div class="modal-backdrop" id="reviewModal">
+  <div class="modal" style="max-width: 700px;">
+    <div class="card-header">
+      <h3 class="card-title" id="reviewModalTitle">Evaluate Nomination</h3>
+      <button onclick="closeModal('reviewModal')" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <div id="reviewModalContent" style="font-size: 0.9rem; line-height: 1.6;"></div>
+    
+    <div id="reviewModalActions" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+    </div>
+  </div>
+</div>
+
+<!-- Rejection Reason Modal -->
+<div class="modal-backdrop" id="rejectionModal">
+  <div class="modal">
+    <div class="card-header">
+      <h3 class="card-title" style="color: var(--danger);">🛑 Reject Training Nomination</h3>
+      <button onclick="closeModal('rejectionModal')" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <form id="rejectionForm" onsubmit="handleRejectSubmit(event)">
+      <input type="hidden" id="rejectNominationId">
+      <div class="form-group">
+        <label for="rejectComment">Mandatory Reason for Rejection *</label>
+        <textarea id="rejectComment" class="input-text" rows="4" required placeholder="State clearly why this nomination is not approved (e.g., budget constraints, out-of-scope for current quarter, or alternative internal training available)..."></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <button type="button" onclick="closeModal('rejectionModal')" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let reviewQueue = [];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadReviewQueue();
+  });
+
+  async function loadReviewQueue() {
+    try {
+      reviewQueue = await apiCall("/api/v1/reviewer/nominations");
+      const tbody = document.getElementById("reviewerTableBody");
+      if (!reviewQueue.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">🎉 No nominations pending review right now. All requests have been evaluated!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = reviewQueue.map(n => `
+        <tr>
+          <td><strong>${n.employee_name || 'Employee'}</strong></td>
+          <td>${n.title}</td>
+          <td>${n.provider}</td>
+          <td>${n.training_type}</td>
+          <td>$${n.cost.toFixed(2)}</td>
+          <td><span class="badge badge-${n.status}">${n.status}</span></td>
+          <td>
+            <button onclick="openReviewModal('${n.id}')" class="btn btn-primary btn-sm">🔍 Evaluate</button>
+          </td>
+        </tr>
+      `).join("");
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  function openReviewModal(nominationId) {
+    const nom = reviewQueue.find(n => n.id === nominationId);
+    if (!nom) return;
+
+    document.getElementById("reviewModalTitle").textContent = `Evaluating: ${nom.title}`;
+
+    let docsHtml = nom.documents.length 
+      ? nom.documents.map(d => `<li><a href="/api/v1/documents/${d.id}" target="_blank">📄 ${d.file_name}</a> (${(d.file_size/1024).toFixed(1)} KB)</li>`).join("")
+      : '<p style="color: var(--text-muted);">No documents attached.</p>';
+
+    document.getElementById("reviewModalContent").innerHTML = `
+      <p><strong>Nominee / Employee:</strong> ${nom.employee_name}</p>
+      <p><strong>Provider:</strong> ${nom.provider} | <strong>Category:</strong> ${nom.training_type}</p>
+      <p><strong>Proposed Date:</strong> ${nom.training_date} | <strong>Duration:</strong> ${nom.duration} | <strong>Cost:</strong> $${nom.cost.toFixed(2)}</p>
+      <p><strong>Current Status:</strong> <span class="badge badge-${nom.status}">${nom.status}</span></p>
+      <hr style="margin: 0.75rem 0; border: 0; border-top: 1px solid var(--border);">
+      <p><strong>Description:</strong><br>${nom.description || 'N/A'}</p>
+      <p style="margin-top: 0.5rem;"><strong>Business Justification:</strong><br>${nom.justification || 'N/A'}</p>
+      <hr style="margin: 0.75rem 0; border: 0; border-top: 1px solid var(--border);">
+      <h4 style="font-size: 0.95rem; margin-bottom: 0.4rem;">📎 Supporting Attachments</h4>
+      <ul>${docsHtml}</ul>
+    `;
+
+    const actionsContainer = document.getElementById("reviewModalActions");
+    let actionsHtml = `<button onclick="closeModal('reviewModal')" class="btn btn-secondary">Close</button>`;
+
+    if (nom.status === "SUBMITTED") {
+      actionsHtml += `
+        <button onclick="handleStartReview('${nom.id}')" class="btn btn-outline">▶️ Start Review</button>
+      `;
+    } else if (nom.status === "UNDER_REVIEW") {
+      actionsHtml += `
+        <button onclick="promptReject('${nom.id}')" class="btn btn-danger">✕ Reject Nomination</button>
+        <button onclick="handleApprove('${nom.id}')" class="btn btn-success">✓ Approve Nomination</button>
+      `;
+    }
+
+    actionsContainer.innerHTML = actionsHtml;
+    openModal("reviewModal");
+  }
+
+  async function handleStartReview(nominationId) {
+    try {
+      await apiCall(`/api/v1/reviewer/nominations/${nominationId}/start-review`, "POST");
+      showToast("Review started. Nomination moved to UNDER_REVIEW.", "info");
+      closeModal("reviewModal");
+      await loadReviewQueue();
+      openReviewModal(nominationId);
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  async function handleApprove(nominationId) {
+    if (!confirm("Confirm approval of this training nomination?")) return;
+    try {
+      await apiCall(`/api/v1/reviewer/nominations/${nominationId}/approve`, "POST");
+      showToast("Nomination successfully APPROVED!", "success");
+      closeModal("reviewModal");
+      loadReviewQueue();
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  function promptReject(nominationId) {
+    document.getElementById("rejectNominationId").value = nominationId;
+    document.getElementById("rejectionForm").reset();
+    closeModal("reviewModal");
+    openModal("rejectionModal");
+  }
+
+  async function handleRejectSubmit(e) {
+    e.preventDefault();
+    const nominationId = document.getElementById("rejectNominationId").value;
+    const comment = document.getElementById("rejectComment").value;
+
+    try {
+      await apiCall(`/api/v1/reviewer/nominations/${nominationId}/reject`, "POST", { comment });
+      showToast("Nomination marked as REJECTED with feedback.", "info");
+      closeModal("rejectionModal");
+      loadReviewQueue();
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+</script>
+{% endblock %}

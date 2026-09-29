@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard — NominaFlow{% endblock %}
+
+{% block content %}
+<div>
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700;">Administrator Pipeline & Audit Dashboard</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Organization-wide pipeline monitoring, status distribution analytics, and immutable audit trail verification.</p>
+    </div>
+    <button onclick="loadAdminDashboard()" class="btn btn-secondary btn-sm">🔄 Refresh Dashboard</button>
+  </div>
+
+  <!-- Metric Statistics Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">Total Requests</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statDraft" style="color: var(--warning);">0</div>
+      <div class="stat-label">Drafts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statSubmitted" style="color: var(--info);">0</div>
+      <div class="stat-label">Submitted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statReview" style="color: var(--purple);">0</div>
+      <div class="stat-label">Under Review</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statApproved" style="color: var(--success);">0</div>
+      <div class="stat-label">Approved</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statRejected" style="color: var(--danger);">0</div>
+      <div class="stat-label">Rejected</div>
+    </div>
+  </div>
+
+  <!-- Global Nominations Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">🌐 All Organization Training Nominations</h2>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <label for="statusFilterSelect" style="font-size: 0.85rem; margin-bottom: 0;">Filter:</label>
+        <select id="statusFilterSelect" class="select-input" style="width: 150px; padding: 0.3rem 0.6rem; font-size: 0.85rem;" onchange="loadAdminDashboard()">
+          <option value="">All Statuses</option>
+          <option value="DRAFT">DRAFT</option>
+          <option value="SUBMITTED">SUBMITTED</option>
+          <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+          <option value="APPROVED">APPROVED</option>
+          <option value="REJECTED">REJECTED</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Program Title</th>
+            <th>Provider</th>
+            <th>Date</th>
+            <th>Cost</th>
+            <th>Status</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody id="adminNominationsTableBody">
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading pipeline records...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Immutable Audit Log Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">📜 System-Wide Immutable Audit Trail</h2>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">Real-time governance records</span>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Event Type</th>
+            <th>Actor</th>
+            <th>Nomination ID</th>
+            <th>Comment / Context</th>
+          </tr>
+        </thead>
+        <tbody id="auditTableBody">
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading audit logs...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    loadAdminDashboard();
+  });
+
+  async function loadAdminDashboard() {
+    const filter = document.getElementById("statusFilterSelect").value;
+    const url = filter ? `/api/v1/admin/nominations?status=${filter}` : "/api/v1/admin/nominations";
+
+    try {
+      const [nominations, auditEvents] = await Promise.all([
+        apiCall(url),
+        apiCall("/api/v1/admin/audit-events"),
+      ]);
+
+      // Calculate stats (from unfiltered total if no filter, or current)
+      updateStats(nominations);
+
+      // Render Nominations
+      const nomTbody = document.getElementById("adminNominationsTableBody");
+      if (!nominations.length) {
+        nomTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No nominations match the selected filter.</td></tr>`;
+      } else {
+        nomTbody.innerHTML = nominations.map(n => `
+          <tr>
+            <td><strong>${n.employee_name || 'User'}</strong></td>
+            <td>${n.title}</td>
+            <td>${n.provider}</td>
+            <td>${n.training_date}</td>
+            <td>$${n.cost.toFixed(2)}</td>
+            <td><span class="badge badge-${n.status}">${n.status}</span></td>
+            <td><span style="font-size: 0.8rem; color: var(--text-muted);">${new Date(n.created_at).toLocaleDateString()}</span></td>
+          </tr>
+        `).join("");
+      }
+
+      // Render Audit Events
+      const auditTbody = document.getElementById("auditTableBody");
+      if (!auditEvents.length) {
+        auditTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No audit events recorded yet.</td></tr>`;
+      } else {
+        auditTbody.innerHTML = auditEvents.map(e => `
+          <tr>
+            <td><span style="font-size: 0.8rem; font-family: monospace;">${new Date(e.timestamp).toLocaleString()}</span></td>
+            <td><span style="font-weight: 600;">${e.event_type}</span></td>
+            <td>${e.actor_name || 'System'}</td>
+            <td><span style="font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">${e.nomination_id.substring(0, 8)}...</span></td>
+            <td><span style="color: var(--text-muted);">${e.comment || '-'}</span></td>
+          </tr>
+        `).join("");
+      }
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  function updateStats(nominations) {
+    document.getElementById("statTotal").textContent = nominations.length;
+    document.getElementById("statDraft").textContent = nominations.filter(n => n.status === "DRAFT").length;
+    document.getElementById("statSubmitted").textContent = nominations.filter(n => n.status === "SUBMITTED").length;
+    document.getElementById("statReview").textContent = nominations.filter(n => n.status === "UNDER_REVIEW").length;
+    document.getElementById("statApproved").textContent = nominations.filter(n => n.status === "APPROVED").length;
+    document.getElementById("statRejected").textContent = nominations.filter(n => n.status === "REJECTED").length;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Portal — NominaFlow{% endblock %}
+
+{% block content %}
+<div>
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700;">Employee Training Portal</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Submit new nominations, manage drafts in form text boxes, attach documents, and track approval status.</p>
+    </div>
+    <button onclick="openNewNominationModal()" class="btn btn-primary">➕ New Training Nomination</button>
+  </div>
+
+  <!-- Draft & Nomination Form Card -->
+  <div class="card" id="nominationFormCard" style="display: none;">
+    <div class="card-header">
+      <h2 class="card-title" id="formCardTitle">📝 Create / Edit Training Nomination</h2>
+      <button onclick="closeNominationForm()" class="btn btn-secondary btn-sm">✕ Close</button>
+    </div>
+
+    <form id="nominationForm" onsubmit="handleSaveNomination(event)">
+      <input type="hidden" id="editNominationId" value="">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="inputTitle">Training Title *</label>
+          <input type="text" id="inputTitle" class="input-text" required placeholder="e.g., Advanced DevOps & CI/CD with Jenkins">
+        </div>
+
+        <div class="form-group">
+          <label for="inputProvider">Training Provider / Institution *</label>
+          <input type="text" id="inputProvider" class="input-text" required placeholder="e.g., Linux Foundation, AWS, Coursera">
+        </div>
+
+        <div class="form-group">
+          <label for="inputType">Category / Type</label>
+          <select id="inputType" class="select-input">
+            <option value="Technical">Technical</option>
+            <option value="DevOps & Cloud">DevOps & Cloud</option>
+            <option value="Leadership">Leadership</option>
+            <option value="Security & Compliance">Security & Compliance</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="inputDate">Proposed Date *</label>
+          <input type="date" id="inputDate" class="input-text" required>
+        </div>
+
+        <div class="form-group">
+          <label for="inputDuration">Duration</label>
+          <input type="text" id="inputDuration" class="input-text" placeholder="e.g., 3 Days / 24 Hours" value="3 Days">
+        </div>
+
+        <div class="form-group">
+          <label for="inputCost">Estimated Cost ($)</label>
+          <input type="number" id="inputCost" class="input-text" step="0.01" min="0" placeholder="0.00" value="0.00">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="inputDescription">Course Syllabus / Description</label>
+          <textarea id="inputDescription" class="input-text" rows="3" placeholder="Provide syllabus modules or course summary..."></textarea>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="inputJustification">Business Justification & Impact</label>
+          <textarea id="inputJustification" class="input-text" rows="3" placeholder="Explain how this training benefits current projects and organization goals..."></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
+        <button type="button" onclick="closeNominationForm()" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-secondary">💾 Save as Draft</button>
+        <button type="button" onclick="handleSaveAndSubmit()" class="btn btn-primary">🚀 Save & Submit for Review</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- My Nominations Table Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">📋 My Training Nominations</h2>
+      <button onclick="loadMyNominations()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+    </div>
+
+    <div class="table-container">
+      <table id="nominationsTable">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Provider</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Cost</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="nominationsTableBody">
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading nominations...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal-backdrop" id="uploadDocModal">
+  <div class="modal">
+    <div class="card-header">
+      <h3 class="card-title">📎 Upload Supporting Document</h3>
+      <button onclick="closeModal('uploadDocModal')" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <form id="uploadDocForm" onsubmit="handleDocumentUpload(event)">
+      <input type="hidden" id="uploadDocNominationId">
+      <div class="form-group">
+        <label for="docFileInput">Select File (PDF, PNG, JPEG up to 5 MB)</label>
+        <input type="file" id="docFileInput" class="input-text" required accept=".pdf,.png,.jpg,.jpeg">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <button type="button" onclick="closeModal('uploadDocModal')" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Upload Document</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- View Details & History Modal -->
+<div class="modal-backdrop" id="detailsModal">
+  <div class="modal" style="max-width: 700px;">
+    <div class="card-header">
+      <h3 class="card-title" id="detailsModalTitle">Nomination Details</h3>
+      <button onclick="closeModal('detailsModal')" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <div id="detailsModalContent" style="font-size: 0.9rem; line-height: 1.6;"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let nominationsData = [];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Set default date to 14 days in future
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 14);
+    document.getElementById("inputDate").value = futureDate.toISOString().split("T")[0];
+    loadMyNominations();
+  });
+
+  async function loadMyNominations() {
+    try {
+      nominationsData = await apiCall("/api/v1/nominations");
+      const tbody = document.getElementById("nominationsTableBody");
+      if (!nominationsData.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No nominations found. Click "New Training Nomination" above to create your first draft.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = nominationsData.map(n => `
+        <tr>
+          <td><strong>${n.title}</strong></td>
+          <td>${n.provider}</td>
+          <td>${n.training_type}</td>
+          <td>${n.training_date}</td>
+          <td>$${n.cost.toFixed(2)}</td>
+          <td><span class="badge badge-${n.status}">${n.status}</span></td>
+          <td>
+            <div style="display: flex; gap: 0.35rem;">
+              <button onclick="viewDetails('${n.id}')" class="btn btn-secondary btn-sm">View</button>
+              ${n.status === 'DRAFT' ? `
+                <button onclick="editDraft('${n.id}')" class="btn btn-outline btn-sm">Edit</button>
+                <button onclick="submitNomination('${n.id}')" class="btn btn-primary btn-sm">Submit</button>
+              ` : ''}
+              ${n.status !== 'APPROVED' && n.status !== 'REJECTED' ? `
+                <button onclick="openUploadModal('${n.id}')" class="btn btn-secondary btn-sm">📎 Attach</button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  function openNewNominationModal() {
+    document.getElementById("editNominationId").value = "";
+    document.getElementById("formCardTitle").textContent = "📝 Create New Training Nomination";
+    document.getElementById("nominationForm").reset();
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 14);
+    document.getElementById("inputDate").value = futureDate.toISOString().split("T")[0];
+    document.getElementById("nominationFormCard").style.display = "block";
+    document.getElementById("nominationFormCard").scrollIntoView({ behavior: "smooth" });
+  }
+
+  function closeNominationForm() {
+    document.getElementById("nominationFormCard").style.display = "none";
+  }
+
+  function editDraft(nominationId) {
+    const nom = nominationsData.find(n => n.id === nominationId);
+    if (!nom) return;
+    document.getElementById("editNominationId").value = nom.id;
+    document.getElementById("formCardTitle").textContent = "✏️ Edit Draft Nomination";
+    document.getElementById("inputTitle").value = nom.title;
+    document.getElementById("inputProvider").value = nom.provider;
+    document.getElementById("inputType").value = nom.training_type;
+    document.getElementById("inputDate").value = nom.training_date;
+    document.getElementById("inputDuration").value = nom.duration;
+    document.getElementById("inputCost").value = nom.cost;
+    document.getElementById("inputDescription").value = nom.description;
+    document.getElementById("inputJustification").value = nom.justification;
+    document.getElementById("nominationFormCard").style.display = "block";
+    document.getElementById("nominationFormCard").scrollIntoView({ behavior: "smooth" });
+  }
+
+  async function handleSaveNomination(e) {
+    if (e) e.preventDefault();
+    const id = document.getElementById("editNominationId").value;
+    const payload = {
+      title: document.getElementById("inputTitle").value,
+      provider: document.getElementById("inputProvider").value,
+      training_type: document.getElementById("inputType").value,
+      training_date: document.getElementById("inputDate").value,
+      duration: document.getElementById("inputDuration").value,
+      cost: parseFloat(document.getElementById("inputCost").value) || 0.0,
+      description: document.getElementById("inputDescription").value,
+      justification: document.getElementById("inputJustification").value,
+    };
+
+    try {
+      if (id) {
+        await apiCall(`/api/v1/nominations/${id}`, "PUT", payload);
+        showToast("Draft updated successfully.", "success");
+      } else {
+        const created = await apiCall("/api/v1/nominations", "POST", payload);
+        showToast("Draft nomination created.", "success");
+        document.getElementById("editNominationId").value = created.id;
+      }
+      closeNominationForm();
+      loadMyNominations();
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  async function handleSaveAndSubmit() {
+    const form = document.getElementById("nominationForm");
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    await handleSaveNomination(null);
+    const id = document.getElementById("editNominationId").value;
+    if (id) {
+      await submitNomination(id);
+    }
+  }
+
+  async function submitNomination(nominationId) {
+    if (!confirm("Are you sure you want to submit this nomination for reviewer evaluation?")) return;
+    try {
+      await apiCall(`/api/v1/nominations/${nominationId}/submit`, "POST");
+      showToast("Nomination submitted successfully!", "success");
+      loadMyNominations();
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  function openUploadModal(nominationId) {
+    document.getElementById("uploadDocNominationId").value = nominationId;
+    document.getElementById("uploadDocForm").reset();
+    openModal("uploadDocModal");
+  }
+
+  async function handleDocumentUpload(e) {
+    e.preventDefault();
+    const nominationId = document.getElementById("uploadDocNominationId").value;
+    const fileInput = document.getElementById("docFileInput");
+    if (!fileInput.files.length) return;
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    try {
+      const res = await fetch(`/api/v1/nominations/${nominationId}/documents`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Upload failed");
+      showToast("Document attached successfully.", "success");
+      closeModal("uploadDocModal");
+      loadMyNominations();
+    } catch (err) {
+      showToast(err.message, "danger");
+    }
+  }
+
+  function viewDetails(nominationId) {
+    const nom = nominationsData.find(n => n.id === nominationId);
+    if (!nom) return;
+    document.getElementById("detailsModalTitle").textContent = nom.title;
+    
+    let docsHtml = nom.documents.length 
+      ? nom.documents.map(d => `<li><a href="/api/v1/documents/${d.id}" target="_blank">📄 ${d.file_name}</a> (${(d.file_size/1024).toFixed(1)} KB)</li>`).join("")
+      : '<p style="color: var(--text-muted);">No supporting documents attached.</p>';
+
+    let historyHtml = nom.audit_events.map(ev => `
+      <div style="border-left: 2px solid var(--primary); padding-left: 0.75rem; margin-bottom: 0.5rem;">
+        <span style="font-weight: 600;">${ev.event_type}</span> by ${ev.actor_name || 'User'} 
+        <span style="font-size: 0.75rem; color: var(--text-muted); float: right;">${new Date(ev.timestamp).toLocaleString()}</span>
+        ${ev.comment ? `<p style="color: var(--text-muted); margin-top: 0.2rem;">${ev.comment}</p>` : ''}
+      </div>
+    `).join("");
+
+    document.getElementById("detailsModalContent").innerHTML = `
+      <p><strong>Provider:</strong> ${nom.provider}</p>
+      <p><strong>Category:</strong> ${nom.training_type} | <strong>Duration:</strong> ${nom.duration} | <strong>Cost:</strong> $${nom.cost.toFixed(2)}</p>
+      <p><strong>Target Date:</strong> ${nom.training_date}</p>
+      <p><strong>Status:</strong> <span class="badge badge-${nom.status}">${nom.status}</span></p>
+      <hr style="margin: 0.75rem 0; border: 0; border-top: 1px solid var(--border);">
+      <p><strong>Description:</strong><br>${nom.description || 'N/A'}</p>
+      <p style="margin-top: 0.5rem;"><strong>Business Justification:</strong><br>${nom.justification || 'N/A'}</p>
+      <hr style="margin: 0.75rem 0; border: 0; border-top: 1px solid var(--border);">
+      <h4 style="font-size: 0.95rem; margin-bottom: 0.4rem;">📎 Attachments</h4>
+      <ul>${docsHtml}</ul>
+      <hr style="margin: 0.75rem 0; border: 0; border-top: 1px solid var(--border);">
+      <h4 style="font-size: 0.95rem; margin-bottom: 0.4rem;">🕒 Audit & Workflow History</h4>
+      <div style="max-height: 180px; overflow-y: auto;">${historyHtml}</div>
+    `;
+    openModal("detailsModal");
+  }
+</script>
+{% endblock %}

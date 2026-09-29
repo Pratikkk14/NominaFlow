@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NominaFlow — Training Nomination Workflow{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="/" class="brand">
+      <span>⚡ NominaFlow</span>
+      <span class="brand-badge">MVP v0.1.0</span>
+    </a>
+
+    <div class="nav-links">
+      {% if current_user %}
+        <div class="user-pill">
+          <span>{{ current_user.name }}</span>
+          <span class="role-tag {{ current_user.role.name.lower() }}">{{ current_user.role.name }}</span>
+        </div>
+        {% if current_user.role.name == "EMPLOYEE" %}
+          <a href="/employee" class="btn btn-secondary btn-sm">My Portal</a>
+        {% elif current_user.role.name == "REVIEWER" %}
+          <a href="/reviewer" class="btn btn-secondary btn-sm">Reviewer Queue</a>
+        {% elif current_user.role.name == "ADMIN" %}
+          <a href="/admin" class="btn btn-secondary btn-sm">Admin Dashboard</a>
+        {% endif %}
+        <button onclick="handleLogout()" class="btn btn-outline btn-sm">Logout</button>
+      {% else %}
+        <a href="/login" class="btn btn-primary btn-sm">Login</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Notification Banner Container -->
+  <div id="toastContainer" class="container" style="padding-bottom: 0;"></div>
+
+  <!-- Page Content -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="/static/js/app.js"></script>
+  <script>
+    async function handleLogout() {
+      try {
+        await apiCall('/api/v1/auth/logout', 'POST');
+        window.location.href = '/login';
+      } catch (err) {
+        window.location.href = '/login';
+      }
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
