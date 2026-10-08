@@ -1,16 +1,17 @@
 """Database engine, session management, initialization and seeding."""
 
 from collections.abc import Generator
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from training_nomination.config import settings
 from training_nomination.db.base import Base
+from training_nomination.models.audit_event import AuditEvent  # noqa: F401
+from training_nomination.models.document import Document  # noqa: F401
+from training_nomination.models.nomination import TrainingNomination  # noqa: F401
 from training_nomination.models.role import Role, RoleType
 from training_nomination.models.user import User
-from training_nomination.models.nomination import TrainingNomination  # noqa: F401
-from training_nomination.models.document import Document  # noqa: F401
-from training_nomination.models.audit_event import AuditEvent  # noqa: F401
 
 # Engine creation: handles sqlite threading and pool settings
 connect_args = {}

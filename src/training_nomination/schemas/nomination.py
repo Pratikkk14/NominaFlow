@@ -1,9 +1,11 @@
 """Training nomination Pydantic schemas."""
 
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
-from training_nomination.schemas.document import DocumentResponse
+
 from training_nomination.schemas.audit_event import AuditEventResponse
+from training_nomination.schemas.document import DocumentResponse
 
 
 class NominationBase(BaseModel):
@@ -58,4 +60,3 @@ class NominationResponse(NominationBase):
     audit_events: list[AuditEventResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
-

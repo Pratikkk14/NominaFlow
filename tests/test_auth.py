@@ -1,7 +1,7 @@
 """Authentication and authorization unit and integration tests."""
 
-import pytest
 from fastapi.testclient import TestClient
+
 from training_nomination.main import app
 
 client = TestClient(app)

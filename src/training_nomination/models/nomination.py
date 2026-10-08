@@ -3,6 +3,7 @@
 import enum
 import uuid
 from datetime import datetime, timezone
+
 from sqlalchemy import Column, DateTime, Float, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 

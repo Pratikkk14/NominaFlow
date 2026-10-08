@@ -1,6 +1,6 @@
 """Reviewer decision and workflow API router."""
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from training_nomination.api.nominations import build_nomination_response
@@ -29,11 +29,7 @@ def get_pending_review_queue(
     """Retrieve all nominations awaiting review (SUBMITTED or UNDER_REVIEW)."""
     pending = (
         db.query(TrainingNomination)
-        .filter(
-            TrainingNomination.status.in_(
-                [NominationStatus.SUBMITTED.value, NominationStatus.UNDER_REVIEW.value]
-            )
-        )
+        .filter(TrainingNomination.status.in_([NominationStatus.SUBMITTED.value, NominationStatus.UNDER_REVIEW.value]))
         .order_by(TrainingNomination.submitted_at.asc())
         .all()
     )
