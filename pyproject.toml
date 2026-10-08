@@ -33,6 +33,8 @@ dev = [
     "pytest>=8.1.0",
     "pytest-cov>=4.1.0",
     "httpx>=0.27.0",
+    "flake8>=7.0.0",
+    "ruff>=0.3.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -43,3 +45,12 @@ minversion = "8.0"
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-ra -q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+

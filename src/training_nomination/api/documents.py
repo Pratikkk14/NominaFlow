@@ -48,9 +48,7 @@ def list_documents(
     db: Session = Depends(get_db),
 ) -> list[DocumentResponse]:
     """List all documents attached to a nomination."""
-    nomination = (
-        db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
-    )
+    nomination = db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
     if not nomination:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

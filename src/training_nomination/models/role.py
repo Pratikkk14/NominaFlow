@@ -1,6 +1,7 @@
 """Role ORM model and role type enumeration."""
 
 import enum
+
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 

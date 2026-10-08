@@ -7,6 +7,7 @@ with failure screenshot mechanism and assertions.
 import os
 import time
 from pathlib import Path
+
 import pytest
 
 # Ensure screenshot directory exists
@@ -31,8 +32,8 @@ class TestNominaFlowSeleniumJourneys:
     def test_journey_1_login_and_role_navigation(self):
         """Journey 1: Employee logs in and is navigated to Employee Portal."""
         from selenium import webdriver
-        from selenium.webdriver.common.by import By
         from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.common.by import By
 
         chrome_options = Options()
         chrome_options.add_argument("--headless")
@@ -65,8 +66,8 @@ class TestNominaFlowSeleniumJourneys:
     def test_journey_2_create_and_submit_nomination(self):
         """Journey 2: Employee creates a draft in form text boxes and submits."""
         from selenium import webdriver
-        from selenium.webdriver.common.by import By
         from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.common.by import By
 
         chrome_options = Options()
         chrome_options.add_argument("--headless")
