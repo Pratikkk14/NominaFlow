@@ -6,6 +6,7 @@ and interactive responsive Web UI.
 
 from contextlib import asynccontextmanager
 from pathlib import Path
+
 from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -159,4 +160,3 @@ def admin_page(
         name="admin.html",
         context={"current_user": current_user},
     )
-

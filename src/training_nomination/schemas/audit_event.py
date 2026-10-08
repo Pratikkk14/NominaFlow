@@ -1,6 +1,7 @@
 """Audit event Pydantic schemas."""
 
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -16,4 +17,3 @@ class AuditEventResponse(BaseModel):
     timestamp: datetime
 
     model_config = ConfigDict(from_attributes=True)
-

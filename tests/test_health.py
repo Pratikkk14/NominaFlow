@@ -1,6 +1,7 @@
 """Smoke and web view rendering tests."""
 
 from fastapi.testclient import TestClient
+
 from training_nomination.main import app
 
 client = TestClient(app)

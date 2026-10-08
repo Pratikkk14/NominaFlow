@@ -90,9 +90,7 @@ def get_nomination_details(
     db: Session = Depends(get_db),
 ) -> NominationResponse:
     """Get complete nomination details by ID."""
-    nomination = (
-        db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
-    )
+    nomination = db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
     if not nomination:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -149,9 +147,7 @@ def get_nomination_status(
     db: Session = Depends(get_db),
 ) -> dict:
     """Get the live status and lifecycle progress of a nomination."""
-    nomination = (
-        db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
-    )
+    nomination = db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
     if not nomination:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -174,9 +170,7 @@ def get_nomination_history(
     db: Session = Depends(get_db),
 ) -> list[AuditEventResponse]:
     """Retrieve full audit event log for a nomination."""
-    nomination = (
-        db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
-    )
+    nomination = db.query(TrainingNomination).filter(TrainingNomination.id == nomination_id).first()
     if not nomination:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

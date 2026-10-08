@@ -1,6 +1,7 @@
 """Pytest configuration and global test fixtures."""
 
 import pytest
+
 from training_nomination.db.session import init_db
 
 

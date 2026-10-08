@@ -2,6 +2,7 @@
 
 import pytest
 from fastapi import HTTPException
+
 from training_nomination.models.nomination import NominationStatus
 from training_nomination.services.state_machine import validate_state_transition
 
