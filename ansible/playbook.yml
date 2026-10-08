@@ -144,7 +144,9 @@
         status_code: 200
         return_content: true
       register: health_response
-      until: health_response.status == 200 and ('"status":"healthy"' in health_response.content or '"status": "healthy"' in health_response.content)
+      until: >
+        health_response.status == 200 and
+        ('"status":"healthy"' in health_response.content or '"status": "healthy"' in health_response.content)
       retries: "{{ max_healthcheck_retries }}"
       delay: "{{ healthcheck_delay }}"
 
