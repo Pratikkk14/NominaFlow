@@ -148,5 +148,22 @@ pipeline {
 
 ---
 
-## 5. Summary & Next Milestone
-Week 7 successfully verified the commit-to-test automated pipeline. Week 8 will introduce static code quality analysis and parameterized deployment stages.
+## 5. Build Artifacts & Execution Screenshots
+
+All execution evidence and test reports from the `develop` branch pipeline run have been archived locally under [`reports/develop-branch-report/`](../reports/develop-branch-report/):
+
+1. **Jenkins Multibranch Dashboard**:
+   - Screenshot: `reports/develop-branch-report/dashboard.png`
+   - Evidence: Displays multibranch job status, branch discovery (`develop`, `main`), and green pipeline run indicator.
+2. **Ephemeral Agent Container Execution**:
+   - Screenshot: `reports/develop-branch-report/agent run on develop branch.png`
+   - Evidence: Displays dynamic container provisioning of `nominaflow-ci-agent:python3`, virtual environment setup, and test execution.
+3. **Automated Coverage Report**:
+   - Artifact: `reports/develop-branch-report/coverage.xml`
+   - Evidence: Detailed line-by-line statement coverage across models, services, API endpoints, and FSM state transitions.
+
+---
+
+## 6. Summary & Next Milestone
+Week 7 successfully verified the commit-to-test automated pipeline with full ephemeral container orchestration. Week 8 will introduce static code quality analysis and parameterized deployment stages.
+
