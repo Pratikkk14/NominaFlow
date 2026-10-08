@@ -1,0 +1,72 @@
+services:
+  # ============================================================================
+  # 1. FastAPI Application Backend (NominaFlow)
+  # ============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nominaflow-app:1.0.0
+    container_name: nominaflow_backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+psycopg://nominaflow:nominaflow_secure_pass@db:5432/nominaflow_db
+      - SECRET_KEY=nominaflow-production-super-secret-key-2026
+      - APP_NAME=NominaFlow Production
+      - DEBUG=False
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - nominaflow-network
+    volumes:
+      - app_uploads:/app/uploads
+    expose:
+      - "8000"
+
+  # ============================================================================
+  # 2. PostgreSQL 16 Relational Database
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: nominaflow_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=nominaflow
+      - POSTGRES_PASSWORD=nominaflow_secure_pass
+      - POSTGRES_DB=nominaflow_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nominaflow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nominaflow -d nominaflow_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # 3. Nginx High-Performance Reverse Proxy
+  # ============================================================================
+  proxy:
+    image: nginx:alpine
+    container_name: nominaflow_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - nominaflow-network
+
+networks:
+  nominaflow-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  app_uploads:
