@@ -54,6 +54,8 @@ cover/
 .env.*
 !.env.example
 SECURITY_TECH_DEBT.md
+SCRIPT.txt
+cmds.md
 .venv/
 venv/
 env/
@@ -89,3 +91,5 @@ logs/
 ehthumbs.db
 Thumbs.db
 desktop.ini
+# Test and execution reports
+reports/

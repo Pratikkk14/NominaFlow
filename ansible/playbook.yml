@@ -5,7 +5,7 @@
 # ==============================================================================
 
 - name: Provision and Deploy NominaFlow Application Stack
-  hosts: all
+  hosts: "{{ target_hosts | default('local_hosts') }}"
   become: true
   gather_facts: true
 
@@ -116,14 +116,13 @@
     # --------------------------------------------------------------------------
     - name: Deploy NominaFlow systemd service unit
       ansible.builtin.copy:
-        src: nominaflow.service
+        src: /mnt/d/College/Assignments/Devops/Jenkins-Tasks/NominaFlow/ansible/nominaflow.service
         dest: /etc/systemd/system/nominaflow.service
         owner: root
         group: root
         mode: '0644'
       notify:
         - Reload systemd daemon
-        - Restart nominaflow service
 
     - name: Flush handlers to ensure systemd is reloaded immediately
       ansible.builtin.meta: flush_handlers
@@ -133,6 +132,7 @@
         name: nominaflow
         enabled: true
         state: started
+      ignore_errors: true
 
     # --------------------------------------------------------------------------
     # Phase 4: Zero-Downtime Health Check & Idempotency Validation
